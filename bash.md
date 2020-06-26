@@ -80,7 +80,7 @@ $ grep -v '^\s*\(#\|$\)' /etc/httpd/conf/httpd.conf | grep -v '^\s*$'
 ## あるディレクトリ配下の\*.conf 内のファイルにある文字列を検索
 
 ```shell
-$ find /etc/httpd -name \*.conf | xargs grep -i WORD
+# find /etc/httpd -name \*.conf | xargs grep -i WORD
 ```
 
 ## ファイル内の空行・コメントを除外して diff
@@ -132,44 +132,51 @@ pgrep, pkill は拡張正規表現。
   # ps auxf | grep -i [v]mstat | awk '{print $2}' | xargs kill -n 15 #killで終了させる
   ```
 
----
+## 置換
 
-# SQL スニペット
+- 単純置換
 
-- mysql コマンドでログインする際のパスワード入力を省略する
+  ```shell
+  # cat test.txt
+  http://www.google.co.jp/
 
-```shell
-# vi /root/.my.cnf
-[client]
-password="password"
-# chmod 400 $!
-```
+  # sed -e 's/google/yahoo/g' test.txt
+  http://www.yahoo.co.jp/
+  ```
 
-以下、mysql コマンドで SQL を実行する場合は、最初の mysql -u root にだけ-p オプションをつけて、後は-p を省略すると良い。省略しないと処理の度にパスワードを尋ねられてしまう。
+- パターンマッチした文字列を置き換える
 
-- -e の後に任意の SQL を指定して実行
+  ```shell
+  # cat test.txt
+  http://www.alessiareya.com/htdocs/dir/index.html
 
-```shell
-# mysql -u root -p -e 'SELECT * FROM mysql.user;'
-```
+  # sed -e 's/\(\/htdocs\)\(\/dir\)/\2\1/g' test.txt
+  http://www.alessiareya.com/dir/htdocs/index.html
 
-- インストール時の mysql,information_schema,performance_shcema 以外の DB を削除
+  デリミタを/から:に変更
+  # sed -e 's:\(/htdocs\)\(/dir\):\2\1:g' test.txt
+  http://www.alessiareya.com/dir/htdocs/index.html
+  ```
 
-```shell
-# mysql -u root -p -e 'show databases'
-# mysql -u root -p -N -e 'show databases' | grep -v -w -e mysql -e information_schema -e performance_schema | xargs -n 1 -I {} mysql -u root -e "DROP DATABASE {}"
-```
+- xml のコメントと空行を削除する
 
-- root 以外のユーザを削除
+  ```shell
+  # cat test.xml
+  <--! comment -->
+  cooment
+  <--! comment -->
+  cooment
+  <--! comment -->
+  cooment
 
-```shell
-# mysql -u root -p -e "SELECT user,host FROM mysql.user WHERE not user='root';"
-# mysql -u root -N -p -e "SELECT user,host FROM mysql.user WHERE not user='root';" | awk '{ print $1 }' | xargs -n 1 -I {} mysql -u root -e "DROP USER '{}'@'localhost';"
-```
+  <--!
+  comment
+  comment
+  comment
+  -->
 
-- ユーザのパスワード変更
-
-```shell
-# mysql -u root -p -e 'SELECT user,password FROM mysql.user;'
-# mysql -u root -e "SET PASSWORD FOR 'ansible'@'localhost' = PASSWORD('ansible');"
-```
+  # sed -e 's/<--!.*-->//' test.xml | sed -e '/<--!/,/-->/d' | sed -e '/^$/d'
+  cooment
+  cooment
+  cooment
+  ```
