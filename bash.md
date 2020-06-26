@@ -131,3 +131,52 @@ pgrep, pkill は拡張正規表現。
 
   # ps auxf | grep -i [v]mstat | awk '{print $2}' | xargs kill -n 15 #killで終了させる
   ```
+
+## 置換
+
+- 単純置換
+
+  ```shell
+  # cat test.txt
+  http://www.google.co.jp/
+
+  # sed -e 's/google/yahoo/g' test.txt
+  http://www.yahoo.co.jp/
+  ```
+
+- パターンマッチした文字列を置き換える
+
+  ```shell
+  # cat test.txt
+  http://www.alessiareya.com/htdocs/dir/index.html
+
+  # sed -e 's/\(\/htdocs\)\(\/dir\)/\2\1/g' test.txt
+  http://www.alessiareya.com/dir/htdocs/index.html
+
+  デリミタを/から:に変更
+  # sed -e 's:\(/htdocs\)\(/dir\):\2\1:g' test.txt
+  http://www.alessiareya.com/dir/htdocs/index.html
+  ```
+
+- xml のコメントと空行を削除する
+
+  ```shell
+  # cat test.xml
+  <--! comment -->
+  cooment
+  <--! comment -->
+  cooment
+  <--! comment -->
+  cooment
+
+  <--!
+  comment
+  comment
+  comment
+  -->
+
+  # sed -e 's/<--!.*-->//' test.xml | sed -e '/<--!/,/-->/d' | sed -e '/^$/d'
+  cooment
+  cooment
+  cooment
+  ```
