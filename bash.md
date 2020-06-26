@@ -80,7 +80,7 @@ $ grep -v '^\s*\(#\|$\)' /etc/httpd/conf/httpd.conf | grep -v '^\s*$'
 ## あるディレクトリ配下の\*.conf 内のファイルにある文字列を検索
 
 ```shell
-$ find /etc/httpd -name \*.conf | xargs grep -i WORD
+# find /etc/httpd -name \*.conf | xargs grep -i WORD
 ```
 
 ## ファイル内の空行・コメントを除外して diff
