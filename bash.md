@@ -180,3 +180,101 @@ pgrep, pkill は拡張正規表現。
   cooment
   cooment
   ```
+
+## crontab
+
+- PATH 変数
+  crontab 内で PATH 変数を定義しない場合、/bin, /usr/bin しかパスが通っていない。
+  特に指定がなければ実行ユーザのワーキングディレクトリとして実行される。
+
+- crontab 内での PATH 変数を調べる
+  PATH 変数が/usr/bin:/bin、PWD が/root, SHELL は/bin/sh であることがわかる。
+
+```shell
+# crontab -e
+*/1 * * * * /bin/env > env.txt
+XDG_SESSION_ID=12
+SHELL=/bin/sh
+USER=root
+PATH=/usr/bin:/bin
+PWD=/root
+LANG=ja_JP.utf8
+SHLVL=1
+HOME=/root
+LOGNAME=root
+XDG_RUNTIME_DIR=/run/user/0
+_=/bin/env
+```
+
+- crontab でパスの通っていないコマンドを実行する(/sbin)
+
+````shell
+# crontab -e
+*/1 * * * * /sbin/arp > sbin_arp.txt
+*/1 * * * * arp > arp.txt```shell
+````
+
+/sbin/arp の方だけ実行結果が存在する
+
+```shell
+# ls -l
+-rw-r--r--  1 root root    0 Jul 17 22:47 arp.txt
+-rw-r--r--  1 root root  321 Jul 17 22:47 sbin_arp.txt
+
+# cat arp.txt
+
+# cat sbin_arp.txt
+Address                  HWtype  HWaddress           Flags Mask            Iface
+gateway                  ether   52:54:00:12:35:02   C                     eth0
+ap01                     ether   dc:fb:02:01:ca:9a   C                     eth2
+10.0.2.3                 ether   52:54:00:12:35:03   C                     eth0
+```
+
+- crontab に PATH 変数を定義する
+  PATH=\$PATH のように変数展開は出来ない。
+
+````shell
+PATH=/sbin:/bin:/usr/bin
+*/1 * * * * /sbin/arp > sbin_arp.txt
+*/1 * * * * arp > arp.txt```shell
+````
+
+- PATH 変数定義後の実行結果
+  arp, /sbin/arp の両方が実行されている。
+
+```shell
+# ls -l
+-rw-r--r--  1 root root  321 Jul 17 22:58 arp.txt
+-rw-r--r--  1 root root  321 Jul 17 22:58 sbin_arp.txt
+
+# cat arp.txt
+Address                  HWtype  HWaddress           Flags Mask            Iface
+gateway                  ether   52:54:00:12:35:02   C                     eth0
+ap01                     ether   dc:fb:02:01:ca:9a   C                     eth2
+10.0.2.3                 ether   52:54:00:12:35:03   C                     eth0
+
+# cat sbin_arp.txt
+Address                  HWtype  HWaddress           Flags Mask            Iface
+gateway                  ether   52:54:00:12:35:02   C                     eth0
+ap01                     ether   dc:fb:02:01:ca:9a   C                     eth2
+10.0.2.3                 ether   52:54:00:12:35:03   C                     eth0
+```
+
+- ワーキングディレクトリを変更する
+  crontab 内で PWD 変数を書き換えても実行出来ない模様。
+  cd でごまかすしかない。
+
+```shell
+# vi /usr/local/sbin/test.sh
+#!/bin/bash
+/bin/echo 'change_working_directory' > echo.txt
+
+# chmod +x !$
+
+# crontab -e
+PATH=/sbin:/bin:/usr/bin
+*/1 * * * * /bin/cd /usr/local/sbin; test.sh
+
+# cat /root/echo.txt
+change_working_directory
+```
