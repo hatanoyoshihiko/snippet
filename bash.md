@@ -278,3 +278,29 @@ PATH=/sbin:/bin:/usr/bin
 # cat /root/echo.txt
 change_working_directory
 ```
+
+## rsync での文字コード処理
+
+- --iconv=sjis,utf8
+  rsync 元ファイル名の文字コードを sjis として認識し、utf8 に変換して rsync 先に同期する。
+  rsync を実行する側のオプションが先になる。
+  実行サーバ=同期元の場合は--iconv=cp932,utf8。実行サーバ=同期先の場合は--iconv=utf8,cp932
+
+- --protect-args
+  ファイル名やディレクトリ名の空白をエスケープなしで処理する。
+  通常、rsync で上記ファイルを同期する場合はエスケープ処理が必要。
+
+- よく使う同期例
+  ミラーリング
+  `# rsync --delete -n -azv --protect-args --log-file=/var/log/rsync.log SRC/ DST/`
+
+- 文字コード調査
+  意図的に sjis のファイル名を作成して調査する。
+
+```
+# echo '変な文字' | iconv -f utf8 -t sjis | xargs touch
+# ls -i1
+33585221 ????????
+# find ./ -inum 33585221 | nkf -g
+Shift_JIS
+```
