@@ -304,3 +304,18 @@ change_working_directory
 # find ./ -inum 33585221 | nkf -g
 Shift_JIS
 ```
+
+## ネットワーク IO 調査
+
+- プロセスの
+  `# strace -p 20471`
+
+- read コールが unfinished のため、そのファイルディスクリプタを調べる
+  `# readlink /proc/20471/fd/58`
+
+- netstat で socket 番号を grep して、何のプロセスか調べる
+  `# netstat -ane | grep 11111`
+
+下記でも良い。
+`# lsof -i -a -p pid` -a は and 条件
+`# lsof -iTCP4 -a -p pid`
