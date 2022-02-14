@@ -290,8 +290,8 @@ change_working_directory
   ファイル名やディレクトリ名の空白をエスケープなしで処理する。
   通常、rsync で上記ファイルを同期する場合はエスケープ処理が必要。
 
-- よく使う同期例
-  ミラーリング
+- よく使う同期例  
+  ミラーリング  
   `# rsync --delete -n -azv --protect-args --log-file=/var/log/rsync.log SRC/ DST/`
 
 - 文字コード調査
@@ -310,12 +310,26 @@ Shift_JIS
 - プロセスの
   `# strace -p 20471`
 
-- read コールが unfinished のため、そのファイルディスクリプタを調べる
+- read コールが unfinished のため、そのファイルディスクリプタを調べる  
   `# readlink /proc/20471/fd/58`
 
-- netstat で socket 番号を grep して、何のプロセスか調べる
+- netstat で socket 番号を grep して、何のプロセスか調べる  
   `# netstat -ane | grep 11111`
+****
+下記でも良い。  
+`# lsof -i -a -p pid` -a は and 条件  
+`# lsof -iTCP4 -a -p pid`  
 
-下記でも良い。
-`# lsof -i -a -p pid` -a は and 条件
-`# lsof -iTCP4 -a -p pid`
+## 計画シャットダウン
+
+2022/2/15 17:50にシャットダウン例  
+`# echo "systemctl poweroff" | at 17:50 02152022`
+
+キューの確認  
+```bash
+# atq
+1 Mon Feb 14 19:10:00 2022 a root
+```
+
+キューの削除  
+`# at -d 1`
