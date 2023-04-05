@@ -333,3 +333,7 @@ Shift_JIS
 
 キューの削除  
 `# at -d 1`
+
+
+## 証明書チェーンの内容をまとめて確認する
+` $ openssl crl2pkcs7 -nocrl -certfile <証明書チェーン> | openssl pkcs7 -print_certs -text -noout`
